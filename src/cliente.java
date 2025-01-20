@@ -23,8 +23,11 @@ public class cliente {
     }
 
     private void cargarDatos() {
-        metodosCRUD crud = new metodosCRUD(); // Instanciar la clase CRUD
-        DefaultTableModel modelo = crud.obtenerMenu(); // Obtener los datos
+        metodosCRUD tabla1 = new metodosCRUD(); // Instanciar la clase MenuDAO
+        DefaultTableModel modelo = tabla1.obtenerMenu(); // Obtener los datos
         table1.setModel(modelo); // Asignar el modelo con los datos al JTable
+
+
     }
 }
+

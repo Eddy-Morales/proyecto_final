@@ -4,10 +4,12 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
+import org.bson.types.ObjectId;
 import javax.swing.table.DefaultTableModel;
 
-public class metodosCRUD {
+import static com.mongodb.client.model.Filters.eq; // Importar el método eq
 
+public class metodosCRUD {
     private static final String CONNECTION_STRING = "mongodb://localhost:27017"; // URI de MongoDB
     private static final String DATABASE_NAME = "tienda"; // Nombre de la base de datos
     private static final String COLLECTION_NAME = "menu"; // Nombre de la colección
@@ -22,6 +24,18 @@ public class metodosCRUD {
         }
     }
 
+    // Método para insertar un nuevo platillo
+    public void insertarPlatillo(String nombreDeComida, String detalles, double precio) {
+        MongoDatabase database = mongoClient.getDatabase(DATABASE_NAME);
+        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
+        Document platillo = new Document("nombreDeComida", nombreDeComida)
+                .append("detalles", detalles)
+                .append("precio", precio);
+        collection.insertOne(platillo);
+        System.out.println("Platillo insertado correctamente.");
+    }
+
+    // Método para obtener el menú como DefaultTableModel
     public DefaultTableModel obtenerMenu() {
         DefaultTableModel modelo = new DefaultTableModel();
         modelo.addColumn("ID");
@@ -49,7 +63,40 @@ public class metodosCRUD {
         return modelo;
     }
 
+    // Método para actualizar un platillo existente
+    public void actualizarPlatillo(String id, String nuevoNombre, String nuevosDetalles, double nuevoPrecio) {
+        try {
+            // Conectar a la base de datos y colección
+            MongoDatabase database = mongoClient.getDatabase(DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
 
+            // Convertir el ID ingresado a ObjectId
+            ObjectId objectId = new ObjectId(id);
+
+            // Crear el documento con los nuevos valores
+            Document nuevosValores = new Document("nombreDeComida", nuevoNombre)
+                    .append("detalles", nuevosDetalles)
+                    .append("precio", nuevoPrecio);
+
+            // Actualizar el documento en la colección
+            collection.updateOne(eq("_id", objectId), new Document("$set", nuevosValores));
+
+            System.out.println("Platillo actualizado correctamente.");
+        } catch (Exception e) {
+            System.err.println("Error al actualizar el platillo: " + e.getMessage());
+        }
+    }
+
+
+    // Método para eliminar un platillo
+    public void eliminarPlatillo(String id) {
+        MongoDatabase database = mongoClient.getDatabase(DATABASE_NAME);
+        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
+
+        // Utilizar Filters.eq para filtrar por ID
+        collection.deleteOne(eq("_id", new org.bson.types.ObjectId(id)));
+        System.out.println("Platillo eliminado correctamente.");
+    }
 
     // Cierra el cliente MongoDB al finalizar la aplicación
     public static void cerrarConexion() {
@@ -57,4 +104,25 @@ public class metodosCRUD {
             mongoClient.close();
         }
     }
+
+    public boolean existePlatillo(String id) {
+        try {
+            // Conectar a la base de datos y colección
+            MongoDatabase database = mongoClient.getDatabase(DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
+
+            // Convertir el ID ingresado a ObjectId
+            ObjectId objectId = new ObjectId(id);
+
+            // Buscar el documento en la colección
+            Document found = collection.find(eq("_id", objectId)).first();
+
+            // Retornar true si se encuentra el platillo, false si no
+            return found != null;
+        } catch (Exception e) {
+            System.err.println("Error al verificar existencia del platillo: " + e.getMessage());
+            return false; // Retornar false en caso de error
+        }
+    }
+
 }

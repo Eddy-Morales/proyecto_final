@@ -1,7 +1,11 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import com.mongodb.client.*;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 public class login {
@@ -17,68 +21,51 @@ public class login {
         ingresar_btn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Obtener usuario y contraseña ingresados
-                String usuario = textField_usuario.getText();
-                String contrasena = new String(passwordField1.getPassword());
+                try (MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://localhost:27017"))) {
+                    // Obtener la base de datos
+                    MongoDatabase database = mongoClient.getDatabase("tienda");
 
-                // Validar las credenciales en MongoDB
-                if (validarUsuario(usuario, contrasena)) {
-                    // Si las credenciales son correctas, abrir el formulario de cliente
-                    abrirFormularioCliente();
-                } else {
-                    // Si las credenciales son incorrectas, mostrar un mensaje de error
-                    JOptionPane.showMessageDialog(loginPanel, "Usuario o contraseña incorrectos", "Error", JOptionPane.ERROR_MESSAGE);
+                    // Obtener la colección
+                    MongoCollection<Document> collection = database.getCollection("usuarios");
+
+                    // Crear la consulta con los valores reales ingresados por el usuario
+                    Document query = new Document("user", textField_usuario.getText())
+                            .append("password", new String(passwordField1.getPassword())); // Se usa 'getPassword' para JPasswordField
+
+                    // Buscar el usuario
+                    Document user = collection.find(query).first();
+
+                    System.out.println("Conexión exitosa a la base de datos.");
+
+                    if (user != null) {
+                        String username = user.getString("user"); // Obtener el nombre de usuario
+
+                        if ("eddy_admin".equals(username)) {
+                            // Abrir la ventana del administrador
+                            JFrame ventanaAdmin = new JFrame("Ventana Administrador");
+                            ventanaAdmin.setContentPane(new administrador().administracionPanel); // Asegúrate de tener esta clase
+                            ventanaAdmin.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                            ventanaAdmin.setSize(1024, 768);
+                            ventanaAdmin.setPreferredSize(new Dimension(1024, 768));
+                            ventanaAdmin.pack();
+                            ventanaAdmin.setVisible(true);
+                        } else {
+                            // Abrir la ventana del cliente
+                            JFrame ventanaCliente = new JFrame("Ventana Cliente");
+                            ventanaCliente.setContentPane(new cliente().clientePanel); // Asegúrate de tener esta clase
+                            ventanaCliente.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                            ventanaCliente.setSize(1024, 768);
+                            ventanaCliente.setPreferredSize(new Dimension(1024, 768));
+                            ventanaCliente.pack();
+                            ventanaCliente.setVisible(true);
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Acceso denegado. Usuario o contraseña incorrectos.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-    }
-
-    // Método para validar el usuario y la contraseña en MongoDB
-    private boolean validarUsuario(String usuario, String contrasena) {
-        boolean esValido = false;
-
-        // Conexión a MongoDB (ajusta los datos según tu configuración)
-        String uri = "mongodb://localhost:27017"; // Ajusta tu URI de conexión a MongoDB
-        String baseDeDatos = "Proyecto"; // Nombre de tu base de datos
-        String coleccionUsuarios = "usuarios"; // Nombre de la colección de usuarios
-
-        try (MongoClient mongoClient = MongoClients.create(uri)) {
-            MongoDatabase database = mongoClient.getDatabase(baseDeDatos);
-            MongoCollection<Document> collection = database.getCollection(coleccionUsuarios);
-
-            // Crear un filtro de búsqueda para encontrar el usuario y la contraseña
-            Document filtro = new Document("usuario", usuario)
-                    .append("password", contrasena);
-
-            // Buscar el documento que coincida con el filtro
-            Document usuarioEncontrado = collection.find(filtro).first();
-
-            // Si el documento existe, las credenciales son correctas
-            if (usuarioEncontrado != null) {
-                esValido = true;
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return esValido;
-    }
-
-    // Método para abrir el formulario de cliente
-    private void abrirFormularioCliente() {
-        // Asegúrate de que esta parte esté bien configurada
-        JFrame frame = new JFrame("Cliente");
-
-        // Asegurarse de que 'cliente' es una instancia válida de tu clase de formulario
-        cliente clienteForm = new cliente(); // Instanciar la clase 'cliente' que contiene el panel
-
-        frame.setContentPane(clienteForm.clientePanel); // Mostrar el panel del formulario
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 480);
-        frame.setPreferredSize(new java.awt.Dimension(600, 480));
-        frame.setLocationRelativeTo(null); // Centra la ventana en la pantalla
-        frame.pack();
-        frame.setVisible(true);
     }
 }
