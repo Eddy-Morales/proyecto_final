@@ -41,6 +41,11 @@ public class login {
                         String username = user.getString("user"); // Obtener el nombre de usuario
 
                         if ("eddy_admin".equals(username)) {
+                            // Obtener la ventana actual (Login) y cerrarla
+                            JFrame loginFrame = (JFrame) SwingUtilities.getWindowAncestor(loginPanel);
+                            if (loginFrame != null) {
+                                loginFrame.dispose();
+                            }
                             // Abrir la ventana del administrador
                             JFrame ventanaAdmin = new JFrame("Ventana Administrador");
                             ventanaAdmin.setContentPane(new administrador().administracionPanel); // Asegúrate de tener esta clase
@@ -49,7 +54,13 @@ public class login {
                             ventanaAdmin.setPreferredSize(new Dimension(1024, 768));
                             ventanaAdmin.pack();
                             ventanaAdmin.setVisible(true);
+
                         } else {
+                            // Obtener la ventana actual (Login) y cerrarla
+                            JFrame loginFrame = (JFrame) SwingUtilities.getWindowAncestor(loginPanel);
+                            if (loginFrame != null) {
+                                loginFrame.dispose();
+                            }
                             // Abrir la ventana del cliente
                             JFrame ventanaCliente = new JFrame("Ventana Cliente");
                             ventanaCliente.setContentPane(new cliente().clientePanel); // Asegúrate de tener esta clase

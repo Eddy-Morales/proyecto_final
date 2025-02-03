@@ -6,7 +6,7 @@ import java.awt.*;
 public class Main {
     public static void main(String[] args) {
         JFrame frame = new JFrame("Login");
-        frame.setContentPane(new administrador().administracionPanel);
+        frame.setContentPane(new login().loginPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 480);
         frame.setPreferredSize(new Dimension(600, 480));

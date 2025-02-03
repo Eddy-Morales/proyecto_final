@@ -90,20 +90,22 @@ public class metodosCRUD {
 
     // Método para eliminar un platillo
     public void eliminarPlatillo(String id) {
-        MongoDatabase database = mongoClient.getDatabase(DATABASE_NAME);
-        MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
+        try {
+            // Conectar a la base de datos y colección
+            MongoDatabase database = mongoClient.getDatabase(DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(COLLECTION_NAME);
 
-        // Utilizar Filters.eq para filtrar por ID
-        collection.deleteOne(eq("_id", new org.bson.types.ObjectId(id)));
-        System.out.println("Platillo eliminado correctamente.");
-    }
+            // Convertir el ID ingresado a ObjectId
+            ObjectId objectId = new ObjectId(id);
 
-    // Cierra el cliente MongoDB al finalizar la aplicación
-    public static void cerrarConexion() {
-        if (mongoClient != null) {
-            mongoClient.close();
+            // Utilizar Filters.eq para filtrar por ID y eliminar el documento
+            collection.deleteOne(eq("_id", objectId));
+            System.out.println("Platillo eliminado correctamente.");
+        } catch (Exception e) {
+            System.err.println("Error al eliminar el platillo: " + e.getMessage());
         }
     }
+
 
     public boolean existePlatillo(String id) {
         try {
@@ -125,4 +127,9 @@ public class metodosCRUD {
         }
     }
 
+    public void cerrarConexion() {
+        if (mongoClient != null) {
+            mongoClient.close();
+        }
+    }
 }
