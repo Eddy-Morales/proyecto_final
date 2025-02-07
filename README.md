@@ -34,4 +34,8 @@ Pdf:
 
 Nota: si se desea visualizar los cambios realizados en la tabla menu solo vuelva a presionar el boton "Visualizar Menú".
 
+Link de video sobre el funcionamiento de la aplicación:
+https://youtu.be/hSK80N9NYCo
+
+
 
